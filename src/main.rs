@@ -58,8 +58,11 @@ fn main() {
 }
 
 fn ray_color(ray: &Ray) -> Color {
-    if hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, ray) {
-        return Color::new(1.0, 0.0, 0.0);
+    let t: f64 = hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, ray);
+    
+    if t > -1.0 {
+        let n: Vec3 = (ray.at(t) - Vec3::new(0.0, 0.0, -1.0)).normalize();
+        return 0.5 * Color::new(n.x + 1.0, n.y + 1.0, n.z + 1.0);
     }
 
     let unit_direction: Vec3 = ray.dir().normalize();
@@ -67,11 +70,17 @@ fn ray_color(ray: &Ray) -> Color {
     (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
 }
 
-fn hit_sphere(center: &Point3, radius: f64, ray: &Ray) -> bool {
+fn hit_sphere(center: &Point3, radius: f64, ray: &Ray) -> f64 {
     let oc: Vec3 = ray.origin() - *center;
-    let a: f64 = vec::dot(ray.dir(), ray.dir());
-    let b: f64 = 2.0 * vec::dot(oc, ray.dir());
-    let c: f64 = vec::dot(oc, oc) - radius * radius;
-    let discriminant: f64 = b * b - 4.0 * a * c;
-    discriminant >= 0.0
+    let a: f64 = ray.dir().length_squared();
+    let half_b: f64 = vec::dot(oc, ray.dir());
+    let c: f64 = oc.length_squared() - radius * radius;
+    let discriminant: f64 = half_b * half_b - a * c;
+
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        println!("Discriminant = {}", discriminant);
+        (-half_b - discriminant.sqrt()) / a
+    }
 }
