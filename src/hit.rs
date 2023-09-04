@@ -1,5 +1,5 @@
-use super::vec::{Vec3, Point3, dot};
-use super::ray::{Ray};
+use super::vec::{Vec3, Point3};
+use super::ray::Ray;
 
 pub struct HitRecord {
 	pub p: Point3,
@@ -23,7 +23,7 @@ impl HitableList {
 		}
 	}
 
-	pub fn push(&mut self, object: impl Hitable + 'static) {
+	pub fn add(&mut self, object: impl Hitable + 'static) {
 		self.objects.push(Box::new(object))
 	}
 }
