@@ -17,10 +17,11 @@ pub struct Camera {
 	pixel_delta_u: Vec3,	// Offset to pixel to the right
 	pixel_delta_v: Vec3,	// Offset to pixel below
 	samples_per_pixel: u32, // Count of random samples for each pixel
+	max_depth: u32,			// Maximum number of ray bounces into scene
 }
 
 impl Camera {
-	pub fn new(image_width: u32, aspect_ratio: f64, samples_per_pixel: u32) -> Camera {
+	pub fn new(image_width: u32, aspect_ratio: f64, samples_per_pixel: u32, max_depth: u32) -> Camera {
 		let mut image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
 		image_height = if image_height < 1 { 1 } else { image_height };
 
@@ -53,6 +54,7 @@ impl Camera {
 			pixel_delta_u: pixel_delta_u,
 			pixel_delta_v: pixel_delta_v,
 			samples_per_pixel: samples_per_pixel,
+			max_depth: max_depth
 		}
 	}
 
@@ -68,12 +70,13 @@ impl Camera {
 				let mut pixel_color: Vec3 = Vec3::zeros();
 				for _sample in 0..self.samples_per_pixel {
 					let ray: Ray = self.get_ray(x, y);
-					pixel_color += self.ray_color(&ray, world);
-
+					pixel_color += self.ray_color(&ray, self.max_depth, world);
 				}
 
 				// Write the final color
-				pixel_color = (pixel_color * (1.0 / self.samples_per_pixel as f64)).clamp(0.0, 0.999); 
+				pixel_color = (pixel_color * (1.0 / self.samples_per_pixel as f64))
+					.sqrt()
+					.clamp(0.0, 0.999); 
 
 				img.put_pixel(
 					x, 
@@ -103,11 +106,17 @@ impl Camera {
 		(px * self.pixel_delta_u) + (py * self.pixel_delta_v)
 	}
 
-	fn ray_color(&self, ray: &Ray, world: &HitableList) -> Color {
+	fn ray_color(&self, ray: &Ray, depth: u32, world: &HitableList) -> Color {
 
-		match world.hit(ray, 0.0, INFINITY) {
+		// If we've exceeded the ray bounce limit, no more light is gathering
+		if depth <= 0 {
+			return Color::zeros();
+		}
+
+		match world.hit(ray, 0.001, INFINITY) {
 			Some(hit) => {
-				0.5 * (hit.normal + Color::new(1.0, 1.0, 1.0))
+				let direction: Vec3 = hit.normal + Vec3::random_unit_vector();
+				0.5 * self.ray_color(&Ray::new(hit.p, direction), depth - 1, world)
 			},
 			None => {
 				let unit_direction: Vec3 = ray.dir().normalize();

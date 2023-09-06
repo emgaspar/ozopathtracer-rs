@@ -3,6 +3,8 @@ use core::fmt::Display;
 
 use std::ops::{Add, Sub, Mul, Div, Neg, AddAssign, DivAssign};
 
+use crate::random::{random_f64, random_f64_range};
+
 #[derive(Clone, Copy)]
 pub struct Vec3 {
     pub x: f64,
@@ -22,6 +24,48 @@ impl Vec3 {
         Vec3 { x: 0.0, y: 0.0, z: 0.0 }
     }
 
+    pub fn random() -> Vec3 {
+        Vec3 { x: random_f64(), y: random_f64(), z: random_f64() }
+    }
+
+    pub fn random_range(min: f64, max: f64) -> Vec3 {
+        Vec3 { 
+            x: random_f64_range(min, max),
+            y: random_f64_range(min, max),
+            z: random_f64_range(min, max)
+        }
+    }
+
+    pub fn random_in_unit_sphere() -> Vec3 {
+        let mut p = Vec3::zeros();
+        while p.length() < 1.0 {
+            p = Vec3::random_range(-1.0, 1.0);
+        }
+        p
+    }
+
+    pub fn random_unit_vector() -> Vec3 {
+        Vec3::random_in_unit_sphere()
+    }
+
+    pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+        let on_unit_sphere = Vec3::random_unit_vector();
+
+        if dot(on_unit_sphere, *normal) > 0.0 {
+            on_unit_sphere
+        } else {
+            -on_unit_sphere
+        }
+    }
+
+    pub fn sqrt(self) -> Vec3 {
+        Vec3 {
+            x: self.x.sqrt(),
+            y: self.y.sqrt(),
+            z: self.z.sqrt()
+        }
+    }
+
     pub fn dot(self, other: Vec3) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
@@ -34,11 +78,11 @@ impl Vec3 {
         self.dot(self)
     }
 
-    pub fn normalize(self) -> Self {
+    pub fn normalize(self) -> Vec3 {
         self / self.length()
     }
 
-    pub fn clamp(self, min: f64, max: f64) -> Self {
+    pub fn clamp(self, min: f64, max: f64) -> Vec3 {
         let x: f64 = if self.x >= min { self.x } else { min };
         let y: f64 = if self.y >= min { self.y } else { min };
         let z: f64 = if self.z >= min { self.z } else { min };
