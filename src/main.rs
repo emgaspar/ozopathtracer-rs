@@ -1,3 +1,4 @@
+mod random;
 mod vec;
 mod ray;
 mod hit;
@@ -11,12 +12,12 @@ use vec::Point3;
 	
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: u32 = 512;
-
+const SAMPLES_PER_PIXEL: u32 = 10;
 
 fn main() {
     use std::time::Instant;
     
-    let camera = Camera::new(IMAGE_WIDTH, ASPECT_RATIO);
+    let camera = Camera::new(IMAGE_WIDTH, ASPECT_RATIO, SAMPLES_PER_PIXEL);
 
     // Scene configuration
     let world: HitableList = 

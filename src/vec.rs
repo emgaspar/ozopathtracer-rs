@@ -18,6 +18,10 @@ impl Vec3 {
         Vec3 {x: x, y: y, z: z}
     }
 
+    pub fn zeros() -> Vec3 {
+        Vec3 { x: 0.0, y: 0.0, z: 0.0 }
+    }
+
     pub fn dot(self, other: Vec3) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
@@ -32,6 +36,19 @@ impl Vec3 {
 
     pub fn normalize(self) -> Self {
         self / self.length()
+    }
+
+    pub fn clamp(self, min: f64, max: f64) -> Self {
+        let x: f64 = if self.x >= min { self.x } else { min };
+        let y: f64 = if self.y >= min { self.y } else { min };
+        let z: f64 = if self.z >= min { self.z } else { min };
+
+        Vec3 {
+            x: if x <= max { x } else { max },
+            y: if y <= max { y } else { max },
+            z: if z <= max { z } else { max },
+        }
+
     }
 }
 
