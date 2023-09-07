@@ -1,11 +1,17 @@
-use super::vec::{Vec3, Point3};
-use super::ray::Ray;
+use std::rc::Rc;
+
+use crate::{
+	material::Material,
+	vec::{Vec3, Point3},
+	ray::Ray
+};
 
 pub struct HitRecord {
 	pub p: Point3,
 	pub normal: Vec3,
 	pub t: f64,
 	pub front_face: bool,
+	pub material: Rc<dyn Material>
 }
 
 pub trait Hitable {
@@ -13,18 +19,18 @@ pub trait Hitable {
 }
 
 pub struct HitableList {
-	objects: Vec<Box<dyn Hitable>>
+	objects: Vec<Rc<dyn Hitable>>
 }
 
 impl HitableList {
-	pub fn new(objects: Vec<Box<dyn Hitable>>) -> HitableList {
+	pub fn new(objects: Vec<Rc<dyn Hitable>>) -> HitableList {
 		HitableList { 
 			objects: objects 
 		}
 	}
 
 	pub fn add(&mut self, object: impl Hitable + 'static) {
-		self.objects.push(Box::new(object))
+		self.objects.push(Rc::new(object))
 	}
 }
 

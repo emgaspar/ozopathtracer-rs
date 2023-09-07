@@ -24,6 +24,10 @@ impl Vec3 {
         Vec3 { x: 0.0, y: 0.0, z: 0.0 }
     }
 
+    pub fn ones() -> Vec3 {
+        Vec3 { x: 1.0, y: 1.0, z: 0.0 }
+    }
+
     pub fn random() -> Vec3 {
         Vec3 { x: random_f64(), y: random_f64(), z: random_f64() }
     }
@@ -93,6 +97,11 @@ impl Vec3 {
             z: if z <= max { z } else { max },
         }
 
+    }
+
+    pub fn near_zero(self) -> bool {
+        const THRESHOLD: f64 = 1.0e-8;
+        (self.x < THRESHOLD) && (self.y < THRESHOLD) && (self.z < THRESHOLD)
     }
 }
 
@@ -168,6 +177,18 @@ impl Mul<f64> for Vec3 {
     }
 }
 
+impl Mul for Vec3 {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        Vec3 {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+            z: self.z * rhs.z
+        }
+    }
+}
+
 impl Mul<Vec3> for f64 {
     type Output = Vec3;
 
@@ -190,10 +211,14 @@ pub fn dot(lhs: Vec3, rhs: Vec3) -> f64 {
     lhs.dot(rhs)
 }
 
-pub fn cross(lhs: &Vec3, rhs: &Vec3) -> Vec3 {
+pub fn cross(lhs: Vec3, rhs: Vec3) -> Vec3 {
     Vec3 {
         x: lhs.y * rhs.z - lhs.z * rhs.y,
         y: lhs.z * rhs.x - lhs.x * rhs.z,
         z: lhs.x * rhs.y - lhs.y * rhs.x
     }
+}
+
+pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+    v - 2.0 * dot(v, n) * (n)
 }

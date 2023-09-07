@@ -58,7 +58,7 @@ impl Camera {
 		}
 	}
 
-	pub fn render(&self, world: &HitableList) {
+	pub fn render(&self, world: &HitableList, image_filename: &str) {
 		  
 	    // Image creation
  	   let mut img: RgbImage = ImageBuffer::new(self.image_width, self.image_height);
@@ -72,7 +72,7 @@ impl Camera {
 					let ray: Ray = self.get_ray(x, y);
 					pixel_color += self.ray_color(&ray, self.max_depth, world);
 				}
-
+				
 				// Write the final color
 				pixel_color = (pixel_color * (1.0 / self.samples_per_pixel as f64))
 					.sqrt()
@@ -84,7 +84,7 @@ impl Camera {
 					image::Rgb([(pixel_color.x * 255.99) as u8, (pixel_color.y * 255.99) as u8, (pixel_color.z * 255.99) as u8]));
 			}
 		}
-		img.save("test.png").unwrap();
+		img.save(image_filename).unwrap();
 		println!(" Completed")
 	}
 
@@ -109,20 +109,26 @@ impl Camera {
 	fn ray_color(&self, ray: &Ray, depth: u32, world: &HitableList) -> Color {
 
 		// If we've exceeded the ray bounce limit, no more light is gathering
-		if depth <= 0 {
-			return Color::zeros();
-		}
-
-		match world.hit(ray, 0.001, INFINITY) {
-			Some(hit) => {
-				let direction: Vec3 = hit.normal + Vec3::random_unit_vector();
-				0.5 * self.ray_color(&Ray::new(hit.p, direction), depth - 1, world)
-			},
-			None => {
-				let unit_direction: Vec3 = ray.dir().normalize();
-				let a: f64 = 0.5 * (unit_direction.y + 1.0);
-				(1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
+		if depth > 0 {
+			match world.hit(ray, 0.001, INFINITY) {
+				Some(hit) => {
+					match hit.material.scatter(ray, &hit) {
+						Some(ray_interaction) => {
+							ray_interaction.attenuation() * self.ray_color(&ray_interaction.scattered(), depth - 1, world)
+						},
+						None => {
+							Color::zeros()
+						}
+					}
+				},
+				None => {
+					let unit_direction: Vec3 = ray.dir().normalize();
+					let a: f64 = 0.5 * (unit_direction.y + 1.0);
+					(1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
+				}
 			}
+		} else {
+			Color::ones()
 		}
 	}	
 }

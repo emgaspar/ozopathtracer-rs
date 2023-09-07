@@ -1,10 +1,10 @@
 use super::vec::{Point3, Vec3};
 
+#[derive(Clone, Copy)]
 pub struct Ray {
 	origin: Point3,
 	dir: Vec3,
 }
-
 
 impl Ray {
 	pub fn new(origin: Point3, dir: Vec3) -> Ray {

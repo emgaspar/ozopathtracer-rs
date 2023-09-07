@@ -1,17 +1,22 @@
+use std::rc::Rc;
+
 use super::hit::{HitRecord, Hitable};
 use super::ray::Ray;
 use super::vec::{Point3, Vec3, dot};
+use crate::material::Material;
 
 pub struct Sphere {
     center: Point3,
     radius: f64,
+	material: Rc<dyn Material>,
 }
 
 impl Sphere {
-	pub fn new(center: Point3, radius: f64) -> Sphere {
+	pub fn new(center: Point3, radius: f64, material: Rc<dyn Material>) -> Sphere {
 		Sphere { 
 			center: center, 
-			radius: radius 
+			radius: radius,
+			material: material
 		}
 	}
 }
@@ -54,7 +59,8 @@ impl Hitable for Sphere {
 			p: hit_point, 
 			normal: hit_normal,
 			t: hit_t,
-			front_face: hit_front_face
+			front_face: hit_front_face,
+			material: self.material.clone()
 		})
 
     }
