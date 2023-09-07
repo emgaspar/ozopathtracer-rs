@@ -12,7 +12,7 @@ use hit::HitableList;
 use sphere::Sphere;
 use camera::Camera;
 use vec::{Point3, Color};
-use material::{Lambertian, Metal};
+use material::{Lambertian, Metal, Dielectric};
 	
 const ASPECT_RATIO: f64 = 16.0 / 9.0;           // Ratio of image width over height
 const IMAGE_WIDTH: u32 = 512;                   // Rendered image width in pixel count
@@ -24,11 +24,11 @@ fn main() {
     use std::time::Instant;
     
     let camera = Camera::new(IMAGE_WIDTH, ASPECT_RATIO, SAMPLES_PER_PIXEL, MAX_DEPTH);
-
     let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = Rc::new(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
-    let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
-    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
+    let material_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
+    let material_left = Rc::new(Dielectric::new(1.5));
+    let material_left_2 = Rc::new(Dielectric::new(1.5));
+    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
 
     // Scene configuration
     let world: HitableList = 
@@ -45,6 +45,13 @@ fn main() {
                     Point3::new(-1.0, 0.0, -1.0),
                     0.5,
                     material_left
+                )
+            ),
+            Rc::new(
+                Sphere::new(
+                    Point3::new(-1.0, 0.0, -1.0),
+                    -0.4,
+                    material_left_2
                 )
             ),
             Rc::new(
