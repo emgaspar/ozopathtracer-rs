@@ -2,7 +2,8 @@ use crate::{
 	material::{Material, MaterialRayInteraction},
 	ray::Ray,
 	hit::HitRecord,
-	vec::{Color, Vec3, reflect}
+	vec::{Vec3, reflect},
+	color::Color
 };
 
 pub struct Metal {

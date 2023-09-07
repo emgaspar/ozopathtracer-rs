@@ -12,7 +12,6 @@ pub struct Vec3 {
     pub z: f64
 }
 
-pub type Color = Vec3;
 pub type Point3 = Vec3;
 
 impl Vec3 {
@@ -20,12 +19,12 @@ impl Vec3 {
         Vec3 {x: x, y: y, z: z}
     }
 
-    pub fn zeros() -> Vec3 {
+    pub const fn zeros() -> Vec3 {
         Vec3 { x: 0.0, y: 0.0, z: 0.0 }
     }
 
-    pub fn ones() -> Vec3 {
-        Vec3 { x: 1.0, y: 1.0, z: 0.0 }
+    pub const fn ones() -> Vec3 {
+        Vec3 { x: 1.0, y: 1.0, z: 1.0 }
     }
 
     pub fn random() -> Vec3 {
@@ -82,7 +81,7 @@ impl Vec3 {
         self.dot(self)
     }
 
-    pub fn normalize(self) -> Vec3 {
+    pub fn unit_vector(self) -> Vec3 {
         self / self.length()
     }
 

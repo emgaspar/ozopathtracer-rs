@@ -2,7 +2,9 @@ use crate::{
 	material::{Material, MaterialRayInteraction},
 	ray::Ray,
 	hit::HitRecord,
-	vec::{Color, Vec3, refract, dot, reflect}, random::random_f64
+	vec::{Vec3, refract, reflect}, 
+	random::random_f64,
+	color::WHITE
 };
 
 pub struct Dielectric {
@@ -25,9 +27,9 @@ impl Dielectric {
 impl Material for Dielectric {
 	fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<MaterialRayInteraction> {
 		let refraction_ratio : f64 = if hit_record.front_face { 1.0 / self.ir } else { self.ir };
-		let unit_direction: Vec3 = ray_in.dir().normalize();
+		let unit_direction: Vec3 = ray_in.dir().unit_vector();
 		let cos_theta: f64 = -unit_direction.dot(hit_record.normal).min(1.0);
-		let sin_theta: f64 = (1.0  - cos_theta * cos_theta).sqrt();
+		let sin_theta: f64 = (1.0  - cos_theta.powi(2)).sqrt();
 
 		let cannot_refract: bool = (refraction_ratio * sin_theta) > 1.0;
 
@@ -41,7 +43,7 @@ impl Material for Dielectric {
 				refract(unit_direction, hit_record.normal, refraction_ratio)
 			};
 
-		Some(MaterialRayInteraction::new(Color::ones(), Ray::new(hit_record.p, direction)))
+		Some(MaterialRayInteraction::new(WHITE, Ray::new(hit_record.p, direction)))
 	}
 
 }

@@ -3,7 +3,7 @@ mod metal;
 mod dielectric;
 
 use crate::{
-	vec::Color,
+	color::Color,
 	ray::Ray,
 	hit::HitRecord
 };

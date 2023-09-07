@@ -2,7 +2,8 @@ use crate::{
 	material::{Material, MaterialRayInteraction},
 	ray::Ray,
 	hit::HitRecord,
-	vec::{Color, Vec3}
+	vec::Vec3,
+	color::Color
 };
 
 pub struct Lambertian {
