@@ -29,8 +29,8 @@ impl HitableList {
 		}
 	}
 
-	pub fn add(&mut self, object: impl Hitable + 'static) {
-		self.objects.push(Rc::new(object))
+	pub fn add(&mut self, object: Rc<dyn Hitable>) {
+		self.objects.push(object)
 	}
 }
 
