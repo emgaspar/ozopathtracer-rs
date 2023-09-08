@@ -25,20 +25,22 @@ pub struct Camera {
 	u: Vec3,				// Camera frame basis vectors
 	v: Vec3,
 	w: Vec3,
+	defocus_disk_u: Vec3,	// Defocus disk horizontal radius
+	defocus_disk_v: Vec3,	// Defocus disk horizontal radius
+	defocus_angle: f64,		// Variation angle of rays through each pixel
 }
 
 impl Camera {
-	pub fn new(image_width: u32, aspect_ratio: f64, vfov: f64, samples_per_pixel: u32, max_depth: u32, look_from: Point3, look_at: Point3, vup: Vec3) -> Camera {
+	pub fn new(image_width: u32, aspect_ratio: f64, vfov: f64, samples_per_pixel: u32, max_depth: u32, look_from: Point3, look_at: Point3, vup: Vec3, defocus_angle: f64, focus_dist: f64) -> Camera {
 		let mut image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
 		image_height = if image_height < 1 { 1 } else { image_height };
 
 		let camera_center: Vec3 = look_from;
 
 		// Determinate viewport dimensions
-		let focal_length: f64 = (look_from - look_at).length();
 		let theta: f64 = vfov.to_radians();
 		let h: f64 = (theta / 2.0).tan();
-		let viewport_height: f64 = 2.0 * h * focal_length;
+		let viewport_height: f64 = 2.0 * h * focus_dist;
 		let viewport_width: f64 = viewport_height * (image_width as f64 / image_height as f64);
 
 		// Calculate the u,v,w unit basis vectors for the camera coordinate frame
@@ -56,7 +58,12 @@ impl Camera {
 
 		// Calculate the location of the upper left pixel
 		let viewport_upper_left: Vec3 = 
-			camera_center - (focal_length * w) - viewport_u / 2.0 - viewport_v / 2.0;
+			camera_center - (focus_dist * w) - viewport_u / 2.0 - viewport_v / 2.0;
+
+		// Calculate the camera defocus disk basis vectors.
+		let defocus_radius: f64 = focus_dist * (defocus_angle / 2.0).to_radians().tan();
+		let defocus_disk_u: Vec3 = u * defocus_radius;
+		let defocus_disk_v: Vec3 = v * defocus_radius;
 
 		Camera {
 			image_width: image_width,
@@ -72,6 +79,9 @@ impl Camera {
 			u: u,
 			v: v,
 			w: w,
+			defocus_angle: defocus_angle,
+			defocus_disk_u: defocus_disk_u,
+			defocus_disk_v: defocus_disk_v
 		}
 	}
 
@@ -110,11 +120,18 @@ impl Camera {
 
 	fn get_ray(&self, x: u32, y: u32) -> Ray
 	{
+		// Get a randomly-sampled camera ray for the pixel at location i,j, originating from
+        // the camera defocus disk.
 		let pixel_center : Vec3 = 
 			self.pixel00_loc + (x as f64 * self.pixel_delta_u) + (y as f64 * self.pixel_delta_v);
 		let pixel_sample: Vec3 = pixel_center + self.pixel_sample_square();
 		
-		let ray_origin: Vec3 = self.center;
+		let ray_origin: Vec3 = if self.defocus_angle <= 0.0 {
+				self.center
+			} 
+			else {
+				self.defocus_disk_sample()
+			};
 		let ray_direction:Vec3 = pixel_sample - ray_origin;
 
 		Ray::new(ray_origin, ray_direction)
@@ -152,4 +169,10 @@ impl Camera {
 			WHITE
 		}
 	}	
+
+	fn defocus_disk_sample(&self) -> Point3 {
+		// Returns a random point in the camera defocus disk.
+        let p: Point3 = Vec3::random_in_unit_disk();
+        self.center + (p.x * self.defocus_disk_u) + (p.y * self.defocus_disk_v)
+	}
 }

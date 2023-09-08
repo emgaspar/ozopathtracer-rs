@@ -23,15 +23,19 @@ const IMAGE_WIDTH: u32 = 512;                   // Rendered image width in pixel
 const SAMPLES_PER_PIXEL: u32 = 100;             // Count of random samples for each pixel
 const MAX_DEPTH: u32 = 50;                      // Maximum number of ray bounces into scene
 
-const VFOV: f64 = 90.0;                         // Vertical FOV
+const VFOV: f64 = 20.0;                         // Vertical FOV
 const LOOK_FROM: Point3 = Point3::new(-2.0, 2.0, 1.0);
 const LOOK_AT: Point3 = Point3::new(0.0, 0.0, -1.0);
 const VUP: Vec3 = Vec3::new(0.0, 1.0, 0.0);
 
+const DEFOCUS_ANGLE: f64 = 10.0;
+const FOCUS_DIST: f64 = 3.4;
+
+
 fn main() {
     use std::time::Instant;
     
-    let camera = Camera::new(IMAGE_WIDTH, ASPECT_RATIO, VFOV, SAMPLES_PER_PIXEL, MAX_DEPTH, LOOK_FROM, LOOK_AT, VUP);
+    let camera = Camera::new(IMAGE_WIDTH, ASPECT_RATIO, VFOV, SAMPLES_PER_PIXEL, MAX_DEPTH, LOOK_FROM, LOOK_AT, VUP, DEFOCUS_ANGLE, FOCUS_DIST);
     let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
     let material_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
     let material_left = Rc::new(Dielectric::new(1.5));
